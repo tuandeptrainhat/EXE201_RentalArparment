@@ -1,0 +1,44 @@
+﻿@model HotelApp.Areas.Client.ViewModels.BookingVM
+@{
+    ViewData["Title"] = "Đặt phòng";
+}
+
+<div class="container-fluid d-flex justify-content-center align-items-center vh-100" style="background-image: url('/images/banner1.jpg'); background-size: cover;">
+    <div class="card shadow-sm p-4" style="max-width: 400px; width: 100%;">
+        <h2 class="text-center mb-4">THÔNG TIN CĂN HỘ</h2>
+
+        <!-- Form đặt phòng -->
+        <form asp-controller="Client" asp-action="Booking" method="post">
+            <!-- Trường ẩn để lưu thông tin phòng và người dùng -->
+            <input asp-for="RoomId" class="form-control" type="hidden" />
+            <input asp-for="UserId" class="form-control" type="hidden" />
+            <input asp-for="CheckIn" type="hidden" class="form-control" />
+            <input asp-for="CheckOut" type="hidden" class="form-control" />
+            <input asp-for="Price" class="form-control" type="hidden" />
+            <input asp-for="Total" class="form-control" type="hidden"/>
+            <input asp-for="CreateAt" class="form-control" type="hidden" />
+            <input asp-for="Description" class="form-control" type="hidden" />
+
+            <!-- Hiển thị thông tin phòng -->
+
+            <h3>@Model.TypeName</h3>
+            <p><strong>Phường/Xã:</strong> @Model.PhuongXa</p>
+            <p><strong>Quận/Huyện:</strong> @Model.QuanHuyen</p>
+            <p><strong>Giá:</strong> @Model.Price.ToString("N0") VND</p>
+            <p><strong>Ưu đãi cho tháng đầu tiên:</strong> @(Model.DiscountRoom?.ToString("N2") ?? "0.00") %</p>
+           
+
+            <!-- Trường chọn phương thức thanh toán -->
+            <div class="form-group mt-3">
+                <label asp-for="PayType">Đặt cọc để giữ căn hộ cho bạn ? @{var DatCoc = Model.Price/10;} (@DatCoc.ToString("N0") VNĐ)</label>
+                <select asp-for="PayType" class="form-control">
+                    <option value="0">Tôi không có nhu cầu</option>
+                    <option value="1">Đặt cọc trước (VNPAY)</option>
+                </select>
+            </div>
+
+            <!-- Nút đặt phòng -->
+            <button type="submit" class="btn w-100 mt-4" style="background-color: black; color: white">Xác nhận</button>
+        </form>
+    </div>
+</div>
