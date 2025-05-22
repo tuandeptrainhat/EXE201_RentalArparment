@@ -39,10 +39,29 @@ button.accept-policy {
   line-height: inherit;
 }
 
+/* Footer styling */
 .footer {
-  position: absolute;
-  bottom: 0;
-  width: 100%;
-  white-space: nowrap;
-  line-height: 60px;
+    padding: 20px 0; /* Giảm padding */
+    background: #f8f9fa; /* Màu nền nhẹ */
+    line-height: 1.5; /* Giảm line-height từ 60px */
+    font-size: 14px; /* Giảm kích thước chữ */
 }
+
+    .footer h3 {
+        font-size: 18px; /* Giảm kích thước tiêu đề */
+        margin-bottom: 15px;
+    }
+
+    .footer .conta li,
+    .footer .link_menu li {
+        margin-bottom: 8px; /* Giảm khoảng cách giữa các mục */
+    }
+
+    .footer .social_icon li {
+        display: inline-block;
+        margin-right: 10px;
+    }
+
+    .footer .social_icon a {
+        font-size: 16px; /* Giảm kích thước icon mạng xã hội */
+    }

@@ -1,5 +1,6 @@
 using HotelApp.Areas.Client.Services;
 using HotelApp.Data;
+using HotelApp.Hubs;
 using HotelApp.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -28,6 +29,7 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true;
 });
 
+builder.Services.AddSignalR();
 
 builder.Services.AddScoped<IVNPayService, VNPayService>();
 
@@ -50,6 +52,8 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.MapHub<ChatHub>("/chatHub");
 
 app.MapControllerRoute(
     name: "default",

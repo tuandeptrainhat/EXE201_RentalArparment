@@ -146,11 +146,11 @@ namespace HotelApp.Controllers
                     var roleResult = await userManager.AddToRoleAsync(user, "Client");
                     if (!roleResult.Succeeded)
                     {
+                        // Log or debug these errors
                         foreach (var error in roleResult.Errors)
                         {
-                            ModelState.AddModelError("", error.Description);
+                            Console.WriteLine(error.Description);
                         }
-                        return View(model); // Nếu lỗi, hiển thị lại form đăng ký
                     }
                     await signInManager.SignInAsync(user, false);
                     var bookingInfoJson = HttpContext.Session.GetString("BookingInfo");
