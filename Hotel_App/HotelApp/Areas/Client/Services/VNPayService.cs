@@ -26,15 +26,15 @@ namespace HotelApp.Areas.Client.Services
             vnpay.AddRequestData("vnp_Version", _configuration["VNPay:Version"]);
             vnpay.AddRequestData("vnp_Command", _configuration["VNPay:Command"]);
             vnpay.AddRequestData("vnp_TmnCode", _configuration["VNPay:TmnCode"]);
-            vnpay.AddRequestData("vnp_Amount", ((int)(booking.Total * 100)).ToString());
+            vnpay.AddRequestData("vnp_Amount", ((long)(booking.Total * 100)).ToString());
             vnpay.AddRequestData("vnp_CreateDate", booking.CreateAt.ToString("yyyyMMddHHmmss"));
             vnpay.AddRequestData("vnp_CurrCode", _configuration["VNPay:CurrCode"]);
             vnpay.AddRequestData("vnp_IpAddr", Utils.GetIpAddress(context));
             vnpay.AddRequestData("vnp_Locale", _configuration["VNPay:Locale"]);
-            vnpay.AddRequestData("vnp_OrderInfo", booking.UserID.ToString() + booking.CreateAt.ToString("yyyyMMddHHmmss"));
+            vnpay.AddRequestData("vnp_OrderInfo", booking.PaymentCode);
             vnpay.AddRequestData("vnp_OrderType", "other"); //default value: other
             vnpay.AddRequestData("vnp_ReturnUrl", _configuration["VNPay:ReturnUrl"]);
-            vnpay.AddRequestData("vnp_TxnRef",tick);
+            vnpay.AddRequestData("vnp_TxnRef", tick);
             var paymentUrl = vnpay.CreateRequestUrl(_configuration["VNPay:Url"], _configuration["VNPay:HashSecret"]);
             return paymentUrl;
         }
@@ -42,15 +42,15 @@ namespace HotelApp.Areas.Client.Services
         public VnPaymentResponseModel PaymentExecute(IQueryCollection collections)
         {
             var vnpay = new VnPayLibrary();
-            foreach (var (key,value) in collections)
+            foreach (var (key, value) in collections)
             {
                 if (!string.IsNullOrEmpty(key) && key.StartsWith("vnp_"))
                 {
                     vnpay.AddResponseData(key, value.ToString());
                 }
-               
+
                 Console.WriteLine($"Key: {key}, Value: {value}");
-                
+
             }
             var vnp_TxnRef = vnpay.GetResponseData("vnp_TxnRef");
             Console.WriteLine("vnp_TxnRef: " + vnp_TxnRef);
@@ -68,8 +68,8 @@ namespace HotelApp.Areas.Client.Services
                     Success = false
                 };
             }
-            return new VnPaymentResponseModel 
-            { 
+            return new VnPaymentResponseModel
+            {
                 Success = true,
                 PaymentMethod = "VnPay",
                 OrderDescription = vnp_OrderInfo,
@@ -77,7 +77,7 @@ namespace HotelApp.Areas.Client.Services
                 TransactionId = vnp_TransactionId.ToString(),
                 Token = vnp_SecureHash,
                 VnPayResponseCode = vnp_ResponseCode
-                
+
             };
         }
     }

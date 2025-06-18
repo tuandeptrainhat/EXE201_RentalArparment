@@ -21,6 +21,8 @@ namespace HotelApp.Data
         public DbSet<CCCD> CCCDs { get; set; }
         public DbSet<Conversation> Conversations { get; set; }
         public DbSet<Message> Messages { get; set; }
+        public DbSet<TimePayment> TimePayment { get; set; }
+        public DbSet<HistoryPayment> HistoryPayment { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -66,6 +68,19 @@ namespace HotelApp.Data
                     NormalizedName = "CLIENT"
                 }
             );
+
+            modelBuilder.Entity<HistoryPayment>()
+            .HasKey(sc => new { sc.BookingId, sc.TimePaymentId }); // khóa chính kép
+
+            modelBuilder.Entity<HistoryPayment>()
+                .HasOne(sc => sc.Booking)
+                .WithMany(s => s.History)
+                .HasForeignKey(sc => sc.BookingId);
+
+            modelBuilder.Entity<HistoryPayment>()
+                .HasOne(sc => sc.TimePayment)
+                .WithMany(c => c.History)
+                .HasForeignKey(sc => sc.TimePaymentId);
 
         }
 

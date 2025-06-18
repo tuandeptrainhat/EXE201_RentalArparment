@@ -28,10 +28,13 @@ namespace HotelApp.Areas.Client.ViewModels
         public string? Description { get; set; }
         public string? PaymentCode { get; set; }
         public string? RoomCode { get; set; }
-        public string? UserFullName { get; set; } 
-        public string? UserEmail { get; set; } 
+        public string? UserFullName { get; set; }
+        public string? UserEmail { get; set; }
         public string? UserPhoneNumber { get; set; }
-
+        public int? ThoiGianHopDong { get; set; }
         public List<CCCD>? CCCD { get; set; }
+        public ICollection<Image> Images { get; set; }
+        public ICollection<TimePayment> Times { get; set; }
+        public ICollection<HistoryPayment> Histories { get; set; }
     }
 }

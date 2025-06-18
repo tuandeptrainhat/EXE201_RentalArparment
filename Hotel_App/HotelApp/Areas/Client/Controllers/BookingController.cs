@@ -55,38 +55,68 @@ namespace HotelApp.Areas.Client.Controllers
                                 Status = b.Status,
                                 PayType = b.PayType,
                                 TypeName = b.Room.RoomType.Name,
-                                AreaName = b.Room.Area.Name
+                                AreaName = b.Room.Area.Name,
+                                ThoiGianHopDong = b.ThoiGianHopDong
                             });
 
             return Json(new { Data = bookings });
         }
 
 
-		[HttpPost]
-		[Route("Client/Cancel/{id}")]
-		public async Task<IActionResult> Cancel(int id)
-		{
-			var booking = await _context.Bookings
-				.Include(b => b.Room)
-				.FirstOrDefaultAsync(b => b.Id == id);
-			if (booking != null)
-			{
-				if (booking.Room != null)
-				{
-					booking.Room.Status = 0;
-					_context.Rooms.Update(booking.Room);
-				}
+        [HttpPost]
+        [Route("Client/Cancel/{id}")]
+        public async Task<IActionResult> Cancel(int id)
+        {
+            var booking = await _context.Bookings
+                .Include(b => b.Room)
+                .FirstOrDefaultAsync(b => b.Id == id);
+            if (booking != null)
+            {
+                if (booking.Room != null)
+                {
+                    booking.Room.Status = 0;
+                    _context.Rooms.Update(booking.Room);
+                }
+                booking.Status = -1;
+                _context.Bookings.Update(booking);
+                await _context.SaveChangesAsync();
+                return Json(new { success = true, message = "Trả phòng thành công." });
+            }
+            return Json(new { success = false, message = "Có lỗi xảy ra khi trả phòng." });
+        }
+        [HttpPost]
+        [Route("Client/PaymentMonth/{BookingId}/{TimeId}")]
+        public async Task<IActionResult> PaymentMonth(int BookingId, int TimeId)
+        {
+            var item = await _context.HistoryPayment.Where(x => x.BookingId == BookingId && x.TimePaymentId == TimeId).FirstOrDefaultAsync();
+            if (item == null)
+            {
+                var history = new HistoryPayment
+                {
+                    BookingId = BookingId,
+                    TimePaymentId = TimeId,
+                    CreateAt = DateTime.Now,
+                    Status = 0
+                };
 
-				_context.Bookings.Remove(booking);
-				await _context.SaveChangesAsync();
-				return Json(new { success = true, message = "Hủy thành công." });
-			}
-			return Json(new { success = false, message = "Có lỗi xảy ra khi hủy đơn." });
-		}
+                _context.HistoryPayment.Add(history);
+            }
+
+            var booking = await _context.Bookings.FindAsync(BookingId);
+            booking.PaymentCode = BookingId.ToString() + "-" + TimeId.ToString();
+
+            var result = await _context.SaveChangesAsync() > 0;
+            if (result)
+            {
+                var url = _vnpayService.CreatePaymentUrl(HttpContext, booking);
+                return Json(new { success = true, url });
+            }
+
+            return Json(new { success = false, message = "Có lỗi xảy ra khi thanh toán." });
+        }
 
 
-
-		[HttpGet]
+        [HttpGet]
         [Route("Client/BookingList/")]
         public IActionResult Index()
         {
@@ -121,6 +151,10 @@ namespace HotelApp.Areas.Client.Controllers
                                })
                                .FirstOrDefaultAsync();
 
+            information.Histories = new List<HistoryPayment>();
+            information.Times = new List<TimePayment>();
+            information.Images = new List<Image>();
+
             return View(information);
         }
         [HttpPost]
@@ -132,55 +166,54 @@ namespace HotelApp.Areas.Client.Controllers
                 var user = await _userManager.GetUserAsync(User);
                 var userId = user.Id;
                 var datPhong = await _context.Bookings.FirstOrDefaultAsync(x => x.UserID == userId && x.RoomID == booking.RoomId);
-                if(datPhong == null || datPhong.Status == -100)
+                if (booking.PayType == 1) // Thanh toán qua VNPay
                 {
-                    if (booking.PayType == 1) // Thanh toán qua VNPay
-                    {
-                        
-                        Booking b = new Booking
-                        {
-                            UserID = booking.UserId,
-                            RoomID = booking.RoomId,
-                            CheckIn = booking.CheckIn,
-                            CheckOut = booking.CheckOut,
-                            Status = -100,
-                            Price = booking.Price,
-                            Total = booking.Price/10,
-                            PayType = booking.PayType,
-                            CreateAt = booking.CreateAt,
-                            Paid = booking.Total,
-                            PaymentCode = booking.UserId.ToString() + booking.CreateAt.ToString("yyyyMMddHHmmss")
-                        };
 
-                        await _context.Bookings.AddAsync(b);
-                        await _context.SaveChangesAsync();
-                        return Redirect(_vnpayService.CreatePaymentUrl(HttpContext, b));
-                    }
-                    else
+                    Booking b = new Booking
                     {
-                        // Thanh toán khi nhận phòng
-                        Booking b = new Booking
-                        {
-                            UserID = booking.UserId,
-                            RoomID = booking.RoomId,
-                            CheckIn = booking.CheckIn,
-                            CheckOut = booking.CheckOut,
-                            Status = 0,
-                            Price = booking.Price,
-                            Total = booking.Price,
-                            PayType = booking.PayType,
-                            CreateAt = booking.CreateAt
-                        };
+                        UserID = booking.UserId,
+                        RoomID = booking.RoomId,
+                        CheckIn = DateTime.Now,
+                        CheckOut = DateTime.Now,
+                        Status = -100,
+                        Price = booking.Price,
+                        Total = booking.Price,
+                        PayType = booking.PayType,
+                        CreateAt = booking.CreateAt,
+                        Paid = booking.Total,
+                        ThoiGianHopDong = booking.ThoiGianHopDong,
+                        PaymentCode = booking.UserId.ToString() + booking.CreateAt.ToString("yyyyMMddHHmmss")
+                    };
 
-                        await _context.Bookings.AddAsync(b);
-                        await _context.SaveChangesAsync();
-                        TempData["Message"] = "Cảm ơn bạn đã quan tâm đến căn hộ này! Chúng tôi sẽ liên hệ với bạn sớm nhất để dẫn bạn đến xem phòng.";
-                        return RedirectToAction("Result");
-                    }
+                    await _context.Bookings.AddAsync(b);
+                    await _context.SaveChangesAsync();
+                    return Redirect(_vnpayService.CreatePaymentUrl(HttpContext, b));
                 }
                 else
                 {
-                    TempData["Message"] = "Bạn đã thêm căn hộ này vào danh sách muốn xem rồi!";
+                    // Thanh toán khi nhận phòng
+                    Booking b = new Booking
+                    {
+                        UserID = booking.UserId,
+                        RoomID = booking.RoomId,
+                        CheckIn = DateTime.Now,
+                        CheckOut = DateTime.Now,
+                        Status = 0,
+                        Price = booking.Price,
+                        Total = booking.Price,
+                        PayType = booking.PayType,
+                        CreateAt = booking.CreateAt,
+                        ThoiGianHopDong = booking.ThoiGianHopDong
+                    };
+
+                    var room = await _context.Rooms.Where(x => x.Id == b.RoomID).FirstOrDefaultAsync();
+
+                    room.Status = 1;
+
+                    _context.Rooms.Update(room);
+                    await _context.Bookings.AddAsync(b);
+                    await _context.SaveChangesAsync();
+                    TempData["Message"] = "Cảm ơn bạn đã quan tâm đến căn hộ này! Chúng tôi sẽ liên hệ với bạn sớm nhất để dẫn bạn đến xem phòng.";
                     return RedirectToAction("Result");
                 }
             }
@@ -197,6 +230,7 @@ namespace HotelApp.Areas.Client.Controllers
 
         [Route("Client/PaymentReturn/")]
         public async Task<IActionResult> PaymentReturn()
+
         {
             var response = _vnpayService.PaymentExecute(Request.Query);
             if (response == null || response.VnPayResponseCode != "00")
@@ -206,14 +240,73 @@ namespace HotelApp.Areas.Client.Controllers
             }
             var code = response.OrderDescription;
             var booking = _context.Bookings.Where(b => b.PaymentCode == code).FirstOrDefault();
-            booking.Status = 0;
-            booking.PayType = 1;
-            _context.SaveChanges();
-            var room = await _context.Rooms.Where(x => x.Id == booking.RoomID).FirstOrDefaultAsync();
-            room.Status = 1;
-            _context.SaveChanges();
-            TempData["Message"] = "Cảm ơn bạn đã quan tâm đến căn hộ này! Chúng tôi sẽ liên hệ với bạn sớm nhất để dẫn bạn đến xem phòng.";
+            if (booking != null)
+            {
+                booking.Status = 0;
+                booking.PayType = 1;
+                _context.SaveChanges();
+                var room = await _context.Rooms.Where(x => x.Id == booking.RoomID).FirstOrDefaultAsync();
+                room.Status = 1;
+                _context.SaveChanges();
+                TempData["Message"] = "Cảm ơn bạn đã quan tâm đến căn hộ này! Chúng tôi sẽ liên hệ với bạn sớm nhất để dẫn bạn đến xem phòng.";
+            }
+
+            string[] parts = code.Split('-');
+
+            if (parts.Length == 2)
+            {
+                string para1 = parts[0];
+                string para2 = parts[1];
+
+                var history = await _context.HistoryPayment.Where(x => x.BookingId.ToString() == para1 && x.TimePaymentId.ToString() == para2).FirstOrDefaultAsync();
+
+                history.Status = 1;
+
+                _context.SaveChanges();
+
+                TempData["Message"] = "Thanh toán tiền phòng thành công.";
+            }
+
+
+
+
             return RedirectToAction("Result");
         }
+
+        [Route("booking/details/{id}")]
+        public async Task<IActionResult> Details(int id)
+        {
+            var booking = await _context.Bookings.FirstOrDefaultAsync(x => x.Id == id);
+
+            var result = new BookingVM();
+            result.Id = booking.Id;
+            result.RoomId = booking.RoomID;
+            result.UserId = booking.UserID;
+            result.CreateAt = booking.CreateAt;
+            result.ThoiGianHopDong = booking.ThoiGianHopDong;
+            result.Status = booking.Status;
+
+
+
+            var room = await _context.Rooms.Include(x => x.Images).Include(x => x.RoomType).FirstOrDefaultAsync(x => x.Id == booking.RoomID);
+
+            result.Images = room.Images;
+            result.PhuongXa = room.PhuongXa;
+            result.QuanHuyen = room.QuanHuyen;
+            result.TypeName = room.RoomType.Name;
+            result.Price = room.Price;
+
+            var time = await _context.TimePayment.ToListAsync();
+
+            result.Times = time;
+            var history = await _context.HistoryPayment.Where(x => x.BookingId == booking.Id).ToListAsync();
+
+            result.Histories = history;
+
+            return View(result);
+        }
+
+
+
     }
 }

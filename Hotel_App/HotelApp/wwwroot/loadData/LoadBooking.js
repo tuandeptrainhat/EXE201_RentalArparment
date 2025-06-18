@@ -25,33 +25,33 @@
             }, // Phường Xã
             {
                 data: 'price',
-                width: "10%"
+                width: "7.25%"
             }, // Giá
             {
                 data: 'payType',
-                render: (data) => data == 0 ? 'Không' : 'Có',
-                width: "10%"
+                render: (data) => data == 0 ? 'Tiền mặt' : 'VNPay',
+                width: "7.25%"
             }, // Cọc
             {
+                data: 'thoiGianHopDong',
+                width: "7.25%"
+            },
+            {
                 data: 'status',
-                render: (data) => {
-                    if (data == 0) return 'Đang chờ';
-                    else if (data == 1) return 'Đã xác nhận';
-                    else if (data == -100) return 'Đã thanh toán';
-                    else if (data == 2) return 'Đã hoàn thành';
-                    else return 'Đã hủy';
-                },
+                render: (data) => data == 0 ? 'Đang thuê' : 'Trả phòng',
                 width: "10%"
-            }, // Trạng thái
+            },
             {
                 data: 'id',
                 render: (data, type, row) => {
                     if (row.status === 0) { // Chỉ hiển thị nút "Hủy" khi trạng thái là "Đang chờ"
                         return `
-                            <a onClick="Cancel('/Client/Cancel/${data}')" class="btn btn-danger btn-sm">Hủy</a>
+                            <a onClick="Cancel('/Client/Cancel/${data}')" class="btn btn-danger btn-sm">Trả phòng</a>
+                            <a href="/booking/details/${data}" class="btn btn-success btn-sm">Chi tiết</a>
+                            
                         `;
                     }
-                    return '';
+                    return `<a href="/booking/details/${data}" class="btn btn-success btn-sm">Chi tiết</a>`;
                 },
                 width: "15%"
             } // Chức năng

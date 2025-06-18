@@ -201,6 +201,9 @@ namespace HotelApp.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ThoiGianHopDong")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("Total")
                         .HasColumnType("decimal(18,2)");
 
@@ -308,6 +311,27 @@ namespace HotelApp.Migrations
                     b.HasIndex("CustomerId");
 
                     b.ToTable("Conversations");
+                });
+
+            modelBuilder.Entity("HotelApp.Models.HistoryPayment", b =>
+                {
+                    b.Property<int>("BookingId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TimePaymentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreateAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("BookingId", "TimePaymentId");
+
+                    b.HasIndex("TimePaymentId");
+
+                    b.ToTable("HistoryPayment");
                 });
 
             modelBuilder.Entity("HotelApp.Models.Image", b =>
@@ -444,6 +468,25 @@ namespace HotelApp.Migrations
                     b.ToTable("RoomTypes");
                 });
 
+            modelBuilder.Entity("HotelApp.Models.TimePayment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Month")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TimePayment");
+                });
+
             modelBuilder.Entity("HotelApp.Models.Voucher", b =>
                 {
                     b.Property<int>("Id")
@@ -513,13 +556,13 @@ namespace HotelApp.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "71db8f10-10b9-42a5-a2c0-99de342614e3",
+                            Id = "e97c8d11-efae-4c17-93b8-59376e9cb0a0",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "a80ae94d-7812-4456-9f0a-dc89c815a69d",
+                            Id = "3f9a0c96-f4c8-4ea1-a4de-d05adfd6454b",
                             Name = "Client",
                             NormalizedName = "CLIENT"
                         });
@@ -700,6 +743,25 @@ namespace HotelApp.Migrations
                     b.Navigation("Customer");
                 });
 
+            modelBuilder.Entity("HotelApp.Models.HistoryPayment", b =>
+                {
+                    b.HasOne("HotelApp.Models.Booking", "Booking")
+                        .WithMany("History")
+                        .HasForeignKey("BookingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HotelApp.Models.TimePayment", "TimePayment")
+                        .WithMany("History")
+                        .HasForeignKey("TimePaymentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Booking");
+
+                    b.Navigation("TimePayment");
+                });
+
             modelBuilder.Entity("HotelApp.Models.Image", b =>
                 {
                     b.HasOne("HotelApp.Models.Room", "Room")
@@ -803,6 +865,8 @@ namespace HotelApp.Migrations
             modelBuilder.Entity("HotelApp.Models.Booking", b =>
                 {
                     b.Navigation("CCCDs");
+
+                    b.Navigation("History");
                 });
 
             modelBuilder.Entity("HotelApp.Models.Conversation", b =>
@@ -813,6 +877,11 @@ namespace HotelApp.Migrations
             modelBuilder.Entity("HotelApp.Models.Room", b =>
                 {
                     b.Navigation("Images");
+                });
+
+            modelBuilder.Entity("HotelApp.Models.TimePayment", b =>
+                {
+                    b.Navigation("History");
                 });
 #pragma warning restore 612, 618
         }

@@ -117,8 +117,8 @@ function Detail(url) {
         url: url,  // Đường dẫn tới action trong controller (ví dụ: /Detail/123)
         method: 'GET',
         success: function (response) {
-            
-            $('#roomDetailModalBody').html(response); 
+
+            $('#roomDetailModalBody').html(response);
             $("#carouselExampleIndicators").owlCarousel({
                 loop: true,               // Quay vòng qua các ảnh
                 margin: 10,               // Khoảng cách giữa các ảnh
@@ -141,12 +141,8 @@ function Detail(url) {
             $('#roomDetailModal').modal('show');
             $('#bookingBtn').click(function () {
                 const roomId = $(this).data('roomid'); // Lấy ID phòng từ thuộc tính data-roomId của button
+                window.location.href = `Booking/${roomId}`;
 
-                // Hiển thị thông báo xác nhận
-                if (confirm("Bạn có chắc muốn xem căn hố này không?")) {
-                    // Điều hướng đến URL để xử lý đặt phòng
-                    window.location.href = `Booking/${roomId}`;
-                }
             });
         },
         error: function (xhr, status, error) {

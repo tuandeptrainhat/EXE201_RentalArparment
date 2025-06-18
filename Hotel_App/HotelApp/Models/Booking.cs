@@ -22,11 +22,11 @@ namespace HotelApp.Models
         [Required]
         public int Status { get; set; }
         [Required]
-        [Column(TypeName ="decimal(18,2)")]
+        [Column(TypeName = "decimal(18,2)")]
         public Decimal Price { get; set; }
         [Required]
         [Column(TypeName = "decimal(18,2)")]
-        public Decimal Total {  get; set; }
+        public Decimal Total { get; set; }
         [Column(TypeName = "decimal(18,2)")]
         public Decimal? Paid { get; set; }
         [Required]
@@ -39,6 +39,10 @@ namespace HotelApp.Models
         public Voucher Voucher { get; set; }
         public ICollection<CCCD> CCCDs { get; set; }
         public string? PaymentCode { get; set; }
+
+        public int? ThoiGianHopDong { get; set; }
+
+        public ICollection<HistoryPayment> History { get; set; }
 
     }
 }

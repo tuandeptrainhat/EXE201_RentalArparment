@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241209214437_QuanHe1NChoBookingVaCCCD")]
-    partial class QuanHe1NChoBookingVaCCCD
+    [Migration("20250618081110_initial")]
+    partial class initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -204,6 +204,9 @@ namespace HotelApp.Migrations
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ThoiGianHopDong")
+                        .HasColumnType("int");
+
                     b.Property<decimal>("Total")
                         .HasColumnType("decimal(18,2)");
 
@@ -285,6 +288,55 @@ namespace HotelApp.Migrations
                     b.ToTable("Contacts");
                 });
 
+            modelBuilder.Entity("HotelApp.Models.Conversation", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("AdminId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("CustomerId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("StartDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AdminId");
+
+                    b.HasIndex("CustomerId");
+
+                    b.ToTable("Conversations");
+                });
+
+            modelBuilder.Entity("HotelApp.Models.HistoryPayment", b =>
+                {
+                    b.Property<int>("BookingId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TimePaymentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreateAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("BookingId", "TimePaymentId");
+
+                    b.HasIndex("TimePaymentId");
+
+                    b.ToTable("HistoryPayment");
+                });
+
             modelBuilder.Entity("HotelApp.Models.Image", b =>
                 {
                     b.Property<int>("Id")
@@ -313,6 +365,38 @@ namespace HotelApp.Migrations
                     b.ToTable("Images");
                 });
 
+            modelBuilder.Entity("HotelApp.Models.Message", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Content")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ConversationId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<bool>("IsRead")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SenderId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ConversationId");
+
+                    b.HasIndex("SenderId");
+
+                    b.ToTable("Messages");
+                });
+
             modelBuilder.Entity("HotelApp.Models.Room", b =>
                 {
                     b.Property<int>("Id")
@@ -331,8 +415,16 @@ namespace HotelApp.Migrations
                     b.Property<decimal>("Discount")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("PhuongXa")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("QuanHuyen")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -377,6 +469,25 @@ namespace HotelApp.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("RoomTypes");
+                });
+
+            modelBuilder.Entity("HotelApp.Models.TimePayment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("Month")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Year")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("TimePayment");
                 });
 
             modelBuilder.Entity("HotelApp.Models.Voucher", b =>
@@ -448,13 +559,13 @@ namespace HotelApp.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "feba5148-fdc7-4a2c-8874-1504b5c52c55",
+                            Id = "e97c8d11-efae-4c17-93b8-59376e9cb0a0",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "9eeb3b1c-d25c-4438-8c4c-1e52e63d8062",
+                            Id = "3f9a0c96-f4c8-4ea1-a4de-d05adfd6454b",
                             Name = "Client",
                             NormalizedName = "CLIENT"
                         });
@@ -617,6 +728,43 @@ namespace HotelApp.Migrations
                     b.Navigation("Booking");
                 });
 
+            modelBuilder.Entity("HotelApp.Models.Conversation", b =>
+                {
+                    b.HasOne("HotelApp.Models.AppUser", "Admin")
+                        .WithMany()
+                        .HasForeignKey("AdminId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.HasOne("HotelApp.Models.AppUser", "Customer")
+                        .WithMany()
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Admin");
+
+                    b.Navigation("Customer");
+                });
+
+            modelBuilder.Entity("HotelApp.Models.HistoryPayment", b =>
+                {
+                    b.HasOne("HotelApp.Models.Booking", "Booking")
+                        .WithMany("History")
+                        .HasForeignKey("BookingId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HotelApp.Models.TimePayment", "TimePayment")
+                        .WithMany("History")
+                        .HasForeignKey("TimePaymentId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Booking");
+
+                    b.Navigation("TimePayment");
+                });
+
             modelBuilder.Entity("HotelApp.Models.Image", b =>
                 {
                     b.HasOne("HotelApp.Models.Room", "Room")
@@ -626,6 +774,25 @@ namespace HotelApp.Migrations
                         .IsRequired();
 
                     b.Navigation("Room");
+                });
+
+            modelBuilder.Entity("HotelApp.Models.Message", b =>
+                {
+                    b.HasOne("HotelApp.Models.Conversation", "Conversation")
+                        .WithMany("Messages")
+                        .HasForeignKey("ConversationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("HotelApp.Models.AppUser", "Sender")
+                        .WithMany()
+                        .HasForeignKey("SenderId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Conversation");
+
+                    b.Navigation("Sender");
                 });
 
             modelBuilder.Entity("HotelApp.Models.Room", b =>
@@ -701,11 +868,23 @@ namespace HotelApp.Migrations
             modelBuilder.Entity("HotelApp.Models.Booking", b =>
                 {
                     b.Navigation("CCCDs");
+
+                    b.Navigation("History");
+                });
+
+            modelBuilder.Entity("HotelApp.Models.Conversation", b =>
+                {
+                    b.Navigation("Messages");
                 });
 
             modelBuilder.Entity("HotelApp.Models.Room", b =>
                 {
                     b.Navigation("Images");
+                });
+
+            modelBuilder.Entity("HotelApp.Models.TimePayment", b =>
+                {
+                    b.Navigation("History");
                 });
 #pragma warning restore 612, 618
         }
