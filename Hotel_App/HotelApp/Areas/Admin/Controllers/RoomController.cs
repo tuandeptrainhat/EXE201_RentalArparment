@@ -46,62 +46,62 @@ namespace HotelApp.Areas.Admin.Controllers
                 QuanHuyen = r.QuanHuyen
             })
             .ToListAsync();
-            
+
             return Json(new { Data = rooms });
         }
-[HttpGet]
-[Route("Room/Create")]
-public async Task<IActionResult> Create()
-{
-        var viewModel = new RoomEditVM
-    {
-        RoomTypes = await _context.RoomTypes.Select(rt => new RoomType { Id = rt.Id, Name = rt.Name }).ToListAsync(),
-        Areas = await _context.Areas.Select(a => new Area { Id = a.Id, Name = a.Name }).ToListAsync(),
-        SelectedAmenities = new List<int>(),
-        Amenities = await _context.Amenities.ToListAsync(),
-    };
-
-    ViewData["Statuses"] = GetStatuses();
-    return View(viewModel);
-}
-
-[HttpPost]
-[Route("Room/Create")]
-public async Task<IActionResult> Create(RoomEditVM viewModel, IFormFileCollection newImages)
-{
-
-    var room = new Room
-    {
-        TypeId = viewModel.TypeId,
-        AreaId = 18,
-        Price = viewModel.Price,
-        Discount = viewModel.Discount,
-        Status = viewModel.Status,
-        QuanHuyen = viewModel.QuanHuyen?.Split('_').Length > 1 ? viewModel.QuanHuyen.Split('_')[1] : viewModel.QuanHuyen,
-        PhuongXa = viewModel.PhuongXa?.Split('_').Length > 1 ? viewModel.PhuongXa.Split('_')[1] : viewModel.PhuongXa,
-        Amenities = await _context.Amenities.Where(a => viewModel.SelectedAmenities.Contains(a.Id)).ToListAsync(),
-        Images = new List<Image>(),
-        Code = DateTime.Now.ToString()
-    };
-
-    if (newImages?.Count > 0)
-    {
-        foreach (var file in newImages)
+        [HttpGet]
+        [Route("Room/Create")]
+        public async Task<IActionResult> Create()
         {
-            var filePath = Path.Combine("wwwroot/upload", file.FileName);
-            using (var stream = new FileStream(filePath, FileMode.Create))
+            var viewModel = new RoomEditVM
             {
-                await file.CopyToAsync(stream);
+                RoomTypes = await _context.RoomTypes.Select(rt => new RoomType { Id = rt.Id, Name = rt.Name }).ToListAsync(),
+                Areas = await _context.Areas.Select(a => new Area { Id = a.Id, Name = a.Name }).ToListAsync(),
+                SelectedAmenities = new List<int>(),
+                Amenities = await _context.Amenities.ToListAsync(),
+            };
+
+            ViewData["Statuses"] = GetStatuses();
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [Route("Room/Create")]
+        public async Task<IActionResult> Create(RoomEditVM viewModel, IFormFileCollection newImages)
+        {
+
+            var room = new Room
+            {
+                TypeId = viewModel.TypeId,
+                AreaId = 18,
+                Price = viewModel.Price,
+                Discount = viewModel.Discount,
+                Status = viewModel.Status,
+                QuanHuyen = viewModel.QuanHuyen?.Split('_').Length > 1 ? viewModel.QuanHuyen.Split('_')[1] : viewModel.QuanHuyen,
+                PhuongXa = viewModel.PhuongXa?.Split('_').Length > 1 ? viewModel.PhuongXa.Split('_')[1] : viewModel.PhuongXa,
+                Amenities = await _context.Amenities.Where(a => viewModel.SelectedAmenities.Contains(a.Id)).ToListAsync(),
+                Images = new List<Image>(),
+                Code = DateTime.Now.ToString()
+            };
+
+            if (newImages?.Count > 0)
+            {
+                foreach (var file in newImages)
+                {
+                    var filePath = Path.Combine("wwwroot/upload", file.FileName);
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+
+                    room.Images.Add(new Image { Path = "/upload/" + file.FileName, Caption = file.FileName });
+                }
             }
 
-            room.Images.Add(new Image { Path = "/upload/" + file.FileName, Caption = file.FileName });
+            _context.Rooms.Add(room);
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Index));
         }
-    }
-
-    _context.Rooms.Add(room);
-    await _context.SaveChangesAsync();
-    return RedirectToAction(nameof(Index));
-}
 
 
         [HttpGet]
@@ -200,7 +200,7 @@ public async Task<IActionResult> Create(RoomEditVM viewModel, IFormFileCollectio
             room.Discount = viewModel.Discount;
             room.Status = viewModel.Status;
             room.Code = viewModel.Code;
-            if(viewModel.PhuongXa != null && viewModel.QuanHuyen != null)
+            if (viewModel.PhuongXa != null && viewModel.QuanHuyen != null)
             {
                 room.PhuongXa = viewModel.PhuongXa?.Split('_').Length > 1 ? viewModel.PhuongXa.Split('_')[1] : viewModel.PhuongXa;
                 room.QuanHuyen = viewModel.QuanHuyen?.Split('_').Length > 1 ? viewModel.QuanHuyen.Split('_')[1] : viewModel.QuanHuyen;
@@ -229,15 +229,15 @@ public async Task<IActionResult> Create(RoomEditVM viewModel, IFormFileCollectio
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
-    
 
-// Xóa phòng
+
+        // Xóa phòng
         [HttpPost]
         [Route("Room/Delete/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             var room = await _context.Rooms.FindAsync(id);
-            if (room == null) return Json(new {success = true, message = "Không tìm thấy phòng!" });
+            if (room == null) return Json(new { success = true, message = "Không tìm thấy phòng!" });
 
             _context.Rooms.Remove(room);
             await _context.SaveChangesAsync();
@@ -290,34 +290,40 @@ public async Task<IActionResult> Create(RoomEditVM viewModel, IFormFileCollectio
         [Route("/ThongKe")]
         public async Task<IActionResult> ThongKe()
         {
-            var list = await _context.Rooms.Where(x=>x.Status == -1).ToListAsync();
+            var list = await _context.Rooms.Where(x => x.Status == -1).ToListAsync();
             var result = new List<ThongKeVM>();
+            var listbooking = await _context.Bookings
+                .Where(x => x.Status == 0)
+                .ToListAsync();
+
             foreach (var item in list)
             {
-                var tk = new ThongKeVM();
-                tk.DoanhThu = item.Price / 10;
+                var b = listbooking.FirstOrDefault(x => x.RoomID == item.Id);
+                if (b == null) continue; // nếu không có booking → bỏ qua
 
-                if (DateTime.TryParse(item.Code, out DateTime date))
-                {
-                    tk.Thang = date.Month;
-                    tk.Nam = date.Year;
-                }
-                else
-                {
-                    tk.Thang = 0; // hoặc giá trị mặc định nếu lỗi
-                    tk.Nam = 0;
-                }
+                var tk = new ThongKeVM();
+
+                // ✅ Tính đúng hoa hồng 10%
+                tk.DoanhThu = (item.Price * (b.ThoiGianHopDong ?? 1)) / 10;
+
+                // ✅ Lấy tháng/năm từ thời điểm booking thay vì từ item.Code
+                var date = b.CreateAt; // hoặc dùng b.CheckIn nếu bạn muốn theo ngày nhận phòng
+
+                tk.Thang = date.Month;
+                tk.Nam = date.Year;
 
                 result.Add(tk);
             }
+
             return Json(new { data = result });
         }
+
 
         [Route("/Rooms/Customer/{id}")]
         public async Task<IActionResult> ListCustomer(int id)
         {
-            var list = await _context.Bookings.Include(x => x.User).Where(x => x.RoomID == id && x.Status != -1 && x.Status!= -100).ToListAsync();
-            return Json(new {Data = list });
+            var list = await _context.Bookings.Include(x => x.User).Where(x => x.RoomID == id && x.Status != -1 && x.Status != -100).ToListAsync();
+            return Json(new { Data = list });
         }
 
         [Route("Manage/Room/AllBookings")]
@@ -353,7 +359,7 @@ public async Task<IActionResult> Create(RoomEditVM viewModel, IFormFileCollectio
                 return Json(new { success = false, message = "Booking không tồn tại." });
             }
 
-            if (status == -1) 
+            if (status == -1)
             {
                 _context.Bookings.Remove(booking);
                 await _context.SaveChangesAsync();

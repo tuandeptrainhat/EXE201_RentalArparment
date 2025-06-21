@@ -78,6 +78,7 @@ namespace HotelApp.Areas.Client.Controllers
                     _context.Rooms.Update(booking.Room);
                 }
                 booking.Status = -1;
+                booking.ngaytraphong = DateTime.Now;
                 _context.Bookings.Update(booking);
                 await _context.SaveChangesAsync();
                 return Json(new { success = true, message = "Trả phòng thành công." });

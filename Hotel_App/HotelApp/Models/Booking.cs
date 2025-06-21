@@ -41,7 +41,7 @@ namespace HotelApp.Models
         public string? PaymentCode { get; set; }
 
         public int? ThoiGianHopDong { get; set; }
-
+        public DateTime? ngaytraphong { get; set; }
         public ICollection<HistoryPayment> History { get; set; }
 
     }

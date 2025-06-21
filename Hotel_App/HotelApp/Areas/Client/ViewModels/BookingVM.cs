@@ -36,5 +36,6 @@ namespace HotelApp.Areas.Client.ViewModels
         public ICollection<Image> Images { get; set; }
         public ICollection<TimePayment> Times { get; set; }
         public ICollection<HistoryPayment> Histories { get; set; }
+        public DateTime? ngaytraphong { get; set; }
     }
 }

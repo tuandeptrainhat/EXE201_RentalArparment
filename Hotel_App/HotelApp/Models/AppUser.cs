@@ -30,5 +30,6 @@ namespace HotelApp.Models
         public string Password { get; set; }
 
         public string? AvatarUrl { get; set; }
+        public ICollection<Booking> Bookings { get; set; }
     }
 }
