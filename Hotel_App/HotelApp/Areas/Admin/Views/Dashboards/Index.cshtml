@@ -1,0 +1,79 @@
+<div class="card shadow p-5">
+    <div class="py-3 mb-4 ms-4" style="border-bottom: 2px solid #ccc" > 
+        <span style="font-size: 30px; font-weight: bold; ">THỐNG KÊ DOANH THU</span>
+    </div>
+    <div style="width:1000px; height:400px;" class="mx-auto">
+        <canvas id="myChart" width="600" height="400" class="mx-auto"></canvas>
+    </div>
+</div>
+
+@section PageScripts {
+    <script>
+        fetch('/ThongKe')
+          .then(response => response.json())
+          .then(data => {
+            const rawData = data.data;
+
+            // Gộp các mục theo "Tháng/Năm" nếu có trùng
+            const revenueByMonth = {};
+
+            rawData.forEach(item => {
+              const label = `${item.thang}/${item.nam}`;
+              if (!revenueByMonth[label]) {
+                revenueByMonth[label] = 0;
+              }
+              revenueByMonth[label] += item.doanhThu;
+            });
+
+                    // Chuyển revenueByMonth thành mảng rồi sắp xếp theo thời gian
+        const sortedEntries = Object.entries(revenueByMonth).sort((a, b) => {
+          const [monthA, yearA] = a[0].split('/').map(Number);
+          const [monthB, yearB] = b[0].split('/').map(Number);
+          return yearA !== yearB ? yearA - yearB : monthA - monthB;
+        });
+
+        const labels = sortedEntries.map(entry => entry[0]);
+        const revenues = sortedEntries.map(entry => entry[1]);
+
+            // Vẽ biểu đồ bằng Chart.js
+            const ctx = document.getElementById('myChart').getContext('2d');
+            const myChart = new Chart(ctx, {
+              type: 'bar',
+              data: {
+                labels: labels, // ["5/2025", "6/2025"]
+                datasets: [{
+                  label: 'Doanh thu (VND)',
+                  data: revenues, // [1000000, 1500000]
+                  backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                  borderColor: 'rgba(54, 162, 235, 1)',
+                  borderWidth: 1
+                }]
+              },
+              options: {
+                responsive: true,
+                scales: {
+                  y: {
+                    beginAtZero: true,
+                    ticks: {
+                      callback: function(value) {
+                        return value.toLocaleString("vi-VN"); // Format VND
+                      }
+                    }
+                  }
+                },
+                plugins: {
+                  tooltip: {
+                    callbacks: {
+                      label: function(context) {
+                        return context.dataset.label + ': ' + context.parsed.y.toLocaleString("vi-VN") + ' VND';
+                      }
+                    }
+                  }
+                }
+              }
+            });
+          })
+          .catch(error => console.error('Lỗi khi fetch dữ liệu:', error));
+    </script>
+
+}

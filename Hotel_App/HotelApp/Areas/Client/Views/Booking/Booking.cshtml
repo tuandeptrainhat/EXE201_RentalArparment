@@ -1,0 +1,165 @@
+﻿@model HotelApp.Areas.Client.ViewModels.BookingVM
+@{
+    ViewData["Title"] = "Đặt phòng";
+}
+
+<div class="container-fluid d-flex justify-content-center align-items-center vh-100" style="background-image: url('/images/banner1.jpg'); background-size: cover;">
+    <div class="card shadow-sm p-4" style="max-width: 400px; width: 100%;">
+        <h2 class="text-center mb-4">THÔNG TIN CĂN HỘ</h2>
+
+        <!-- Form đặt phòng -->
+        <div>
+
+
+            <!-- Hiển thị thông tin phòng -->
+
+            <h3>@Model.TypeName</h3>
+            <p><strong>Phường/Xã:</strong> @Model.PhuongXa</p>
+            <p><strong>Quận/Huyện:</strong> @Model.QuanHuyen</p>
+            <p><strong>Giá:</strong> @Model.Price.ToString("N0") VND</p>
+            <p><strong>Ưu đãi cho tháng đầu tiên:</strong> @(Model.DiscountRoom?.ToString("N2") ?? "0.00") %</p>
+
+            <!-- Trường chọn phương thức thanh toán -->
+            <div class="form-group mt-3">
+                <label for="ThoiGianHopDong"><strong>Thời gian thuê</strong></label>
+                <select id="ThoiGianHopDong-input" name="ThoiGianHopDong" class="form-control">
+                    <option value="0">Chọn thời gian thuê</option>
+                    <option value="3">3 tháng</option>
+                    <option value="6">6 tháng</option>
+                    <option value="12">12 tháng</option>
+                </select>
+            </div>
+
+            <!-- Trường chọn phương thức thanh toán -->
+            <div class="form-group mt-3">
+                <label for="PayType">
+                    <strong>Phương thức thanh toán:</strong> <br>
+                    Cọc 1 tháng sẽ hoàn lại sau khi chấm dứt hợp đồng và trừ các chi phí
+                </label>
+                <select id="PayType-input" name="PayType" class="form-control">
+                    <option value="0">Tiền mặt</option>
+                    <option value="1">VNPay</option>
+                </select>
+            </div>
+
+
+            <!-- Nút đặt phòng -->
+            <button type="button" id="open-Modal" class="btn w-100 mt-4" style="background-color: black; color: white" data-bs-toggle="modal" data-bs-target="#ContactModal">
+                Xác nhận
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="ContactModal" tabindex="-1" aria-labelledby="ContactModalLabel" aria-hidden="true">
+    <div class="modal-dialog h-100">
+        <div class="modal-content" style="margin-top:200px">
+            <div class="modal-header">
+                <h1 class="modal-title fs-5" id="ContactModalLabel">Điều khoản hợp đồng</h1>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-controller="Client" asp-action="Booking" method="post">
+                <!-- Trường ẩn để lưu thông tin phòng và người dùng -->
+                <input asp-for="RoomId" name="RoomId" class="form-control" type="hidden" />
+                <input asp-for="UserId" name="UserId" class="form-control" type="hidden" />
+                <input asp-for="CheckIn" name="CheckIn" type="hidden" class="form-control" />
+                <input asp-for="CheckOut" name="CheckOut" type="hidden" class="form-control" />
+                <input asp-for="Price" name="Price" class="form-control" type="hidden" />
+                <input asp-for="Total" name="Total" class="form-control" type="hidden" />
+                <input asp-for="CreateAt" name="CreateAt" class="form-control" type="hidden" />
+                <input asp-for="Times" name="Times" class="form-control" type="hidden" />
+                <input asp-for="Histories" name="Histories" class="form-control" type="hidden" />
+                <input asp-for="Images" name="Images" class="form-control" type="hidden" />
+                <input asp-for="Description" name="Description" class="form-control" type="hidden" />
+                <input asp-for="PayType" value="0" id="PayType-Send" name="PayType" class="form-control" type="hidden" />
+                <input asp-for="ThoiGianHopDong" value="0" id="ThoiGianHopDong-Send" name="ThoiGianHopDong" class="form-control" type="hidden" />
+                <div class="modal-body" style="height: 300px; overflow-y: auto;  padding: 15px; border: 1px solid #ccc; background-color: #f9f9f9;">
+                    <div class="mb-3">
+                        <label for="UserFullName" class="form-label">Họ và tên khách hàng</label>
+                        <input asp-for="UserFullName" name="UserFullName" class="form-control" required />
+                        <span asp-validation-for="UserFullName" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="UserPhoneNumber" class="form-label">Số điện thoại</label>
+                        <input asp-for="UserPhoneNumber" name="UserPhoneNumber" class="form-control" required />
+                        <span asp-validation-for="UserPhoneNumber" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="CCCD" class="form-label">Số CCCD/CMND</label>
+                        <input asp-for="CCCD" name="CCCD" class="form-control" required />
+                        <span asp-validation-for="CCCD" class="text-danger"></span>
+                    </div>
+
+                    <strong>1. Thông tin căn hộ thuê</strong><br>
+                    Người thuê xác nhận đồng ý thuê căn hộ với đầy đủ tiện nghi như đã mô tả trên hệ thống.<br>
+
+                    <strong>2. Thời gian thuê</strong><br>
+                    Thời hạn thuê theo như lụa chọn ban đầu của khách hàng. Việc gia hạn sẽ được hai bên thỏa thuận trước khi hết hạn thuê ít nhất 15 ngày.<br>
+
+                    <strong>3. Giá thuê và đặt cọc</strong><br>
+
+                    Giá thuê theo như giá hiển thị trên website, thanh toán mỗi tháng một lần, trước ngày 10 hàng tháng.<br>
+
+                    Người thuê đặt cọc trước 1 tháng tiền thuê, khoản tiền này sẽ được hoàn lại khi kết thúc hợp đồng nếu không có phát sinh bồi thường.<br>
+
+                    <strong>4. Quy định sử dụng</strong><br>
+
+                    Người thuê cam kết sử dụng căn hộ đúng mục đích để ở, không được cho người khác thuê lại.<br>
+
+                    Không tự ý sửa chữa, tháo dỡ, thay đổi cấu trúc hoặc nội thất căn hộ.<br>
+
+                    Có trách nhiệm giữ gìn vệ sinh, an toàn và tuân thủ nội quy khu nhà.<br>
+
+                    <strong>5. Chấm dứt hợp đồng và bồi thường</strong><br>
+
+                    Hợp đồng sẽ chấm dứt khi hết thời hạn hoặc khi một trong hai bên có nhu cầu chấm dứt sớm và báo trước 15 ngày.<br>
+
+                    Người thuê phải bồi thường nếu làm hư hỏng tài sản hoặc vi phạm các điều khoản trong hợp đồng.<br>
+
+                    <strong>6. Giải quyết tranh chấp</strong><br>
+
+                    Mọi tranh chấp phát sinh sẽ được ưu tiên giải quyết bằng thương lượng.<br>
+
+                    Trường hợp không thể hòa giải, vụ việc sẽ được chuyển đến cơ quan có thẩm quyền theo quy định pháp luật.<br>
+
+                    <div class="mt-3">
+                        <input type="checkbox" id="confirm-rent"></input>
+                        <label>Tôi đã đọc và xác nhận</label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="submit" id="submit-btn" disabled class="btn btn-primary">Xác nhận</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function(){
+            let confirm = document.querySelector('#confirm-rent');
+            let submit = document.querySelector('#submit-btn');
+            let payTypeInput = document.querySelector('#PayType-input');
+            let payTypeSend = document.querySelector('#PayType-Send');
+            let thoiGianHopDongInput = document.querySelector('#ThoiGianHopDong-input');
+            let thoiGianHopDongSend = document.querySelector('#ThoiGianHopDong-Send');
+            let open = document.querySelector('#open-Modal');
+
+            confirm.addEventListener('change', function () {
+                submit.disabled = !this.checked;
+            });
+
+            open.addEventListener('click', function () {
+                thoiGianHopDongSend.value = thoiGianHopDongInput.value;
+                payTypeSend.value = payTypeInput.value;
+            });
+        })
+    </script>
+
+
+
+}
