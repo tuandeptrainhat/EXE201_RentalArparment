@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace HotelApp.Migrations
 {
     /// <inheritdoc />
-    public partial class initial : Migration
+    public partial class AddBookingRelationToAppUser : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -385,7 +385,8 @@ namespace HotelApp.Migrations
                     CreateAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     UpdateAt = table.Column<DateTime>(type: "datetime2", nullable: true),
                     PaymentCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    ThoiGianHopDong = table.Column<int>(type: "int", nullable: true)
+                    ThoiGianHopDong = table.Column<int>(type: "int", nullable: true),
+                    ngaytraphong = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -482,8 +483,8 @@ namespace HotelApp.Migrations
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { "3f9a0c96-f4c8-4ea1-a4de-d05adfd6454b", null, "Client", "CLIENT" },
-                    { "e97c8d11-efae-4c17-93b8-59376e9cb0a0", null, "Admin", "ADMIN" }
+                    { "939dd94f-ca05-4af9-9240-339083433f21", null, "Client", "CLIENT" },
+                    { "c35b95d6-e75b-4e9a-a25c-92dc31997baf", null, "Admin", "ADMIN" }
                 });
 
             migrationBuilder.CreateIndex(

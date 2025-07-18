@@ -1,24 +1,83 @@
-﻿@model List<HotelApp.Models.AppUser>
+﻿@model List<ClientWithBookingViewModel>
 
-<div class="layout-demo-wrapper">
-    <div class="card shadow-lg container p-5">
-        <div class="titlepage">
-            <h2>Quản lý Khách hàng</h2>
-        </div>
-        <button class="btn btn-primary mb-4" style="width: 200px;" onclick="location.href='@Url.Action("Create","Client")'">Thêm khách hàng</button>
+<table class="table table-bordered">
+    <thead class="table-dark">
+        <tr>
+            <th>SST</th>
+            <th>Họ và tên</th>
+            <th>Email</th>
+            <th>SĐT</th>
+            <th>Ngày bắt đầu HĐ</th>
+            <th>Ngày kết thúc HĐ</th>
+            <th>Căn hộ</th>
+        </tr>
+    </thead>
+    <tbody>
+        @for (int i = 0; i < Model.Count; i++)
+        {
+            var item = Model[i];
+            <tr>
+                <td>@(i + 1)</td>
+                <td>@item.User.FullName</td>
+                <td>@item.User.Email</td>
+                <td>@item.User.PhoneNumber</td>
 
-        <table id="ClientTableAdmin" class="table table-striped table-bordered pt-5">
-            <thead class="table-dark">
-                <tr>
-                    <th>SST</th>
-                    <th>Họ và tên</th>
-                    <th>Email</th>
-                    <th>Số điện thoại</th>
-                    <th>Ảnh đại diện</th>
-                </tr>
-            </thead>
-        </table>
-    </div>
-</div>
+                <!-- Ngày bắt đầu -->
+                <td>
+                    @if (item.Bookings != null && item.Bookings.Any())
+                    {
+                        <ul class="list-unstyled">
+                            @foreach (var booking in item.Bookings)
+                            {
+                                <li>@booking.CheckIn.ToString("dd/MM/yyyy")</li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <span>Chưa có</span>
+                    }
+                </td>
 
+                <!-- Ngày kết thúc -->
+                <td>
+                    @if (item.Bookings != null && item.Bookings.Any())
+                    {
+                        <ul class="list-unstyled">
+                            @foreach (var booking in item.Bookings)
+                            {
+                                <li>@booking.NgayTraPhong?.ToString("dd/MM/yyyy")</li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <span>Chưa có</span>
+                    }
+                </td>
+                <td>
+                    @if (item.Bookings != null && item.Bookings.Any())
+                    {
+                        <ul class="list-unstyled">
+                            @foreach (var booking in item.Bookings)
+                            {
+                                <li>
+                                    <a class="btn btn-sm btn-info"
+                                       href="@Url.Action("Details", "Room", new { area = "Admin", id = booking.RoomId })">
+                                        Chi tiết
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <span>Không có</span>
+                    }
+                </td>
+
+            </tr>
+        }
+    </tbody>
+</table>
 

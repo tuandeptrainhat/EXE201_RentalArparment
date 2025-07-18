@@ -74,6 +74,24 @@
                 <input asp-for="PayType" value="0" id="PayType-Send" name="PayType" class="form-control" type="hidden" />
                 <input asp-for="ThoiGianHopDong" value="0" id="ThoiGianHopDong-Send" name="ThoiGianHopDong" class="form-control" type="hidden" />
                 <div class="modal-body" style="height: 300px; overflow-y: auto;  padding: 15px; border: 1px solid #ccc; background-color: #f9f9f9;">
+                    <div class="mb-3">
+                        <label for="UserFullName" class="form-label">Họ và tên khách hàng</label>
+                        <input asp-for="UserFullName" name="UserFullName" class="form-control" required />
+                        <span asp-validation-for="UserFullName" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="UserPhoneNumber" class="form-label">Số điện thoại</label>
+                        <input asp-for="UserPhoneNumber" name="UserPhoneNumber" class="form-control" required />
+                        <span asp-validation-for="UserPhoneNumber" class="text-danger"></span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="CCCD" class="form-label">Số CCCD/CMND</label>
+                        <input asp-for="CCCD" name="CCCD" class="form-control" required />
+                        <span asp-validation-for="CCCD" class="text-danger"></span>
+                    </div>
+
                     <strong>1. Thông tin căn hộ thuê</strong><br>
                     Người thuê xác nhận đồng ý thuê căn hộ với đầy đủ tiện nghi như đã mô tả trên hệ thống.<br>
 

@@ -290,28 +290,34 @@ public async Task<IActionResult> Create(RoomEditVM viewModel, IFormFileCollectio
         [Route("/ThongKe")]
         public async Task<IActionResult> ThongKe()
         {
-            var list = await _context.Rooms.Where(x=>x.Status == -1).ToListAsync();
+            var list = await _context.Rooms.Where(x => x.Status == -1).ToListAsync();
             var result = new List<ThongKeVM>();
+            var listbooking = await _context.Bookings
+                .Where(x => x.Status == 0)
+                .ToListAsync();
+
             foreach (var item in list)
             {
-                var tk = new ThongKeVM();
-                tk.DoanhThu = item.Price / 10;
+                var b = listbooking.FirstOrDefault(x => x.RoomID == item.Id);
+                if (b == null) continue; // nếu không có booking → bỏ qua
 
-                if (DateTime.TryParse(item.Code, out DateTime date))
-                {
-                    tk.Thang = date.Month;
-                    tk.Nam = date.Year;
-                }
-                else
-                {
-                    tk.Thang = 0; // hoặc giá trị mặc định nếu lỗi
-                    tk.Nam = 0;
-                }
+                var tk = new ThongKeVM();
+
+                // ✅ Tính đúng hoa hồng 10%
+                tk.DoanhThu = (item.Price * (b.ThoiGianHopDong ?? 1)) / 10;
+
+                // ✅ Lấy tháng/năm từ thời điểm booking thay vì từ item.Code
+                var date = b.CreateAt; // hoặc dùng b.CheckIn nếu bạn muốn theo ngày nhận phòng
+
+                tk.Thang = date.Month;
+                tk.Nam = date.Year;
 
                 result.Add(tk);
             }
+
             return Json(new { data = result });
         }
+
 
         [Route("/Rooms/Customer/{id}")]
         public async Task<IActionResult> ListCustomer(int id)

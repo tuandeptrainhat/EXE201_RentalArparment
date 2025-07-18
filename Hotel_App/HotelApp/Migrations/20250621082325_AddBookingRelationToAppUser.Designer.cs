@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HotelApp.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250618081110_initial")]
-    partial class initial
+    [Migration("20250621082325_AddBookingRelationToAppUser")]
+    partial class AddBookingRelationToAppUser
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -219,6 +219,9 @@ namespace HotelApp.Migrations
 
                     b.Property<int?>("VoucherID")
                         .HasColumnType("int");
+
+                    b.Property<DateTime?>("ngaytraphong")
+                        .HasColumnType("datetime2");
 
                     b.HasKey("Id");
 
@@ -559,13 +562,13 @@ namespace HotelApp.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "e97c8d11-efae-4c17-93b8-59376e9cb0a0",
+                            Id = "c35b95d6-e75b-4e9a-a25c-92dc31997baf",
                             Name = "Admin",
                             NormalizedName = "ADMIN"
                         },
                         new
                         {
-                            Id = "3f9a0c96-f4c8-4ea1-a4de-d05adfd6454b",
+                            Id = "939dd94f-ca05-4af9-9240-339083433f21",
                             Name = "Client",
                             NormalizedName = "CLIENT"
                         });
@@ -701,7 +704,7 @@ namespace HotelApp.Migrations
                         .IsRequired();
 
                     b.HasOne("HotelApp.Models.AppUser", "User")
-                        .WithMany()
+                        .WithMany("Bookings")
                         .HasForeignKey("UserID")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -863,6 +866,11 @@ namespace HotelApp.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("HotelApp.Models.AppUser", b =>
+                {
+                    b.Navigation("Bookings");
                 });
 
             modelBuilder.Entity("HotelApp.Models.Booking", b =>
